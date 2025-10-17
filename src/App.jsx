@@ -306,6 +306,69 @@ export default function App() {
     setSelectedElementIds([newIcon.id]);
   };
 
+  const addHeading = () => {
+    const newHeading = {
+      id: `heading-${Date.now()}`,
+      type: 'heading',
+      x: 100,
+      y: 350,
+      width: 200,
+      height: 50,
+      content: 'Heading',
+      level: 'h1',
+      fontSize: 32,
+      fontWeight: 'bold',
+      color: '#000000',
+      backgroundColor: 'transparent',
+      borderRadius: 0,
+      borderWidth: 0,
+      borderStyle: 'solid',
+      borderColor: '#ccc',
+    };
+    setElements([...elements, newHeading]);
+    setSelectedElementIds([newHeading.id]);
+  };
+
+  const addInputField = () => {
+    const newInput = {
+      id: `input-${Date.now()}`,
+      type: 'input',
+      x: 100,
+      y: 400,
+      width: 200,
+      height: 40,
+      placeholder: 'Placeholder',
+      fontSize: 14,
+      color: '#000000',
+      backgroundColor: '#ffffff',
+      borderRadius: 4,
+      borderWidth: 1,
+      borderStyle: 'solid',
+      borderColor: '#ccc',
+      padding: 10,
+    };
+    setElements([...elements, newInput]);
+    setSelectedElementIds([newInput.id]);
+  };
+
+  const addDivider = () => {
+    const newDivider = {
+      id: `divider-${Date.now()}`,
+      type: 'divider',
+      x: 100,
+      y: 450,
+      width: 200,
+      height: 2,
+      backgroundColor: '#000000',
+      borderRadius: 0,
+      borderWidth: 0,
+      borderStyle: 'solid',
+      borderColor: '#ccc',
+    };
+    setElements([...elements, newDivider]);
+    setSelectedElementIds([newDivider.id]);
+  };
+
   const addCircle = () => {
     const newCircle = {
       id: `circle-${Date.now()}`,
@@ -332,7 +395,36 @@ export default function App() {
     const updatedElements = elements.map(el => {
       if (selectedElementIds.includes(el.id)) {
         const isNumeric = ['width', 'height', 'x', 'y', 'fontSize', 'borderRadius', 'borderWidth', 'padding'].includes(property);
-        return { ...el, [property]: isNumeric ? Number(value) : value };
+        let newEl = { ...el, [property]: isNumeric ? Number(value) : value };
+        if (property === 'level') {
+          switch (value) {
+            case 'h1':
+              newEl.fontSize = 32;
+              newEl.fontWeight = 'bold';
+              break;
+            case 'h2':
+              newEl.fontSize = 24;
+              newEl.fontWeight = 'bold';
+              break;
+            case 'h3':
+              newEl.fontSize = 20;
+              newEl.fontWeight = 'bold';
+              break;
+            case 'h4':
+              newEl.fontSize = 16;
+              newEl.fontWeight = 'bold';
+              break;
+            case 'h5':
+              newEl.fontSize = 14;
+              newEl.fontWeight = 'bold';
+              break;
+            case 'h6':
+              newEl.fontSize = 12;
+              newEl.fontWeight = 'bold';
+              break;
+          }
+        }
+        return newEl;
       }
       return el;
     });
@@ -535,6 +627,15 @@ export default function App() {
           <button onClick={addIconPlaceholder} style={styles.elementButton}>
             <span style={styles.buttonIcon}>★</span> Icon
           </button>
+          <button onClick={addHeading} style={styles.elementButton}>
+            <span style={styles.buttonIcon}>H</span> Heading
+          </button>
+          <button onClick={addInputField} style={styles.elementButton}>
+            <span style={styles.buttonIcon}>I</span> Input
+          </button>
+          <button onClick={addDivider} style={styles.elementButton}>
+            <span style={styles.buttonIcon}>—</span> Divider
+          </button>
 
           <div style={styles.canvasSettings}>
             <h3 style={styles.settingsTitle}>Canvas</h3>
@@ -602,14 +703,14 @@ export default function App() {
 
             return (
               <div key={element.id} style={{ position: 'absolute', left: element.x, top: element.y, zIndex: isSelected ? 1000 : index }}>
-                {(element.type === 'rectangle' || element.type === 'circle' || element.type === 'container') && (
+                {(element.type === 'rectangle' || element.type === 'circle' || element.type === 'container' || element.type === 'divider') && (
                   <div
                     style={{ ...elementStyle, position: 'relative', left: 0, top: 0, backgroundColor: element.backgroundColor }}
                     onMouseDown={(e) => handleMouseDownOnElement(e, element.id)}
                   ></div>
                 )}
 
-                {(element.type === 'text' || element.type === 'button' || element.type === 'icon') && (
+                {(element.type === 'text' || element.type === 'button' || element.type === 'icon' || element.type === 'heading') && (
                   <div
                     style={{
                       ...elementStyle,
@@ -640,6 +741,26 @@ export default function App() {
                     }}
                   >
                     {element.content}
+                  </div>
+                )}
+
+                {element.type === 'input' && (
+                  <div
+                    style={{
+                      ...elementStyle,
+                      position: 'relative',
+                      left: 0,
+                      top: 0,
+                      fontSize: `${element.fontSize}px`,
+                      color: '#999',
+                      backgroundColor: element.backgroundColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      paddingLeft: `${element.padding}px`,
+                    }}
+                    onMouseDown={(e) => handleMouseDownOnElement(e, element.id)}
+                  >
+                    {element.placeholder}
                   </div>
                 )}
 
@@ -715,6 +836,26 @@ export default function App() {
                 )}
                 {selectedElement.type === 'image' && (
                   <PropertyInput label="Image URL" type="text" value={selectedElement.src} onChange={e => updateSelectedElement('src', e.target.value)} />
+                )}
+                {selectedElement.type === 'input' && (
+                  <PropertyInput label="Placeholder" type="text" value={selectedElement.placeholder} onChange={e => updateSelectedElement('placeholder', e.target.value)} />
+                )}
+                {selectedElement.type === 'heading' && (
+                  <div style={styles.propertyInputContainer}>
+                    <label style={styles.propertyLabel}>Level</label>
+                    <select
+                      value={selectedElement.level}
+                      onChange={e => updateSelectedElement('level', e.target.value)}
+                      style={styles.propertyInput}
+                    >
+                      <option value="h1">H1</option>
+                      <option value="h2">H2</option>
+                      <option value="h3">H3</option>
+                      <option value="h4">H4</option>
+                      <option value="h5">H5</option>
+                      <option value="h6">H6</option>
+                    </select>
+                  </div>
                 )}
                 {selectedElement.type !== 'circle' && (
                   <PropertyInput label="Border R." value={selectedElement.borderRadius} onChange={e => updateSelectedElement('borderRadius', e.target.value)} />
