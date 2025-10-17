@@ -223,6 +223,89 @@ export default function App() {
     setSelectedElementIds([newText.id]);
   };
 
+  const addButton = () => {
+    const newButton = {
+      id: `button-${Date.now()}`,
+      type: 'button',
+      x: 100,
+      y: 150,
+      width: 120,
+      height: 40,
+      content: 'Click Me',
+      fontSize: 14,
+      color: '#ffffff',
+      backgroundColor: '#007bff',
+      hoverBackgroundColor: '#0056b3',
+      hoverColor: '#ffffff',
+      borderRadius: 4,
+      borderWidth: 0,
+      borderStyle: 'solid',
+      borderColor: '#ccc',
+      padding: 10,
+    };
+    setElements([...elements, newButton]);
+    setSelectedElementIds([newButton.id]);
+  };
+
+  const addImagePlaceholder = () => {
+    const newImage = {
+      id: `image-${Date.now()}`,
+      type: 'image',
+      x: 150,
+      y: 200,
+      width: 150,
+      height: 150,
+      src: '', // Initially empty, user will provide URL
+      alt: 'Placeholder',
+      backgroundColor: '#f0f0f0',
+      borderRadius: 0,
+      borderWidth: 1,
+      borderStyle: 'dashed',
+      borderColor: '#ccc',
+    };
+    setElements([...elements, newImage]);
+    setSelectedElementIds([newImage.id]);
+  };
+
+  const addContainer = () => {
+    const newContainer = {
+      id: `container-${Date.now()}`,
+      type: 'container',
+      x: 50,
+      y: 250,
+      width: 300,
+      height: 200,
+      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+      borderRadius: 4,
+      borderWidth: 1,
+      borderStyle: 'dashed',
+      borderColor: '#aaa',
+    };
+    setElements([...elements, newContainer]);
+    setSelectedElementIds([newContainer.id]);
+  };
+
+  const addIconPlaceholder = () => {
+    const newIcon = {
+      id: `icon-${Date.now()}`,
+      type: 'icon',
+      x: 100,
+      y: 300,
+      width: 50,
+      height: 50,
+      content: '★', // Default star icon
+      fontSize: 40,
+      color: '#000000',
+      backgroundColor: 'transparent',
+      borderRadius: 0,
+      borderWidth: 0,
+      borderStyle: 'solid',
+      borderColor: '#ccc',
+    };
+    setElements([...elements, newIcon]);
+    setSelectedElementIds([newIcon.id]);
+  };
+
   const addCircle = () => {
     const newCircle = {
       id: `circle-${Date.now()}`,
@@ -440,6 +523,18 @@ export default function App() {
           <button onClick={addText} style={styles.elementButton}>
             <span style={styles.buttonIcon}>T</span> Text
           </button>
+          <button onClick={addButton} style={styles.elementButton}>
+            <span style={styles.buttonIcon}>B</span> Button
+          </button>
+          <button onClick={addImagePlaceholder} style={styles.elementButton}>
+            <span style={styles.buttonIcon}>🖼️</span> Image
+          </button>
+          <button onClick={addContainer} style={styles.elementButton}>
+            <span style={styles.buttonIcon}>🔲</span> Container
+          </button>
+          <button onClick={addIconPlaceholder} style={styles.elementButton}>
+            <span style={styles.buttonIcon}>★</span> Icon
+          </button>
 
           <div style={styles.canvasSettings}>
             <h3 style={styles.settingsTitle}>Canvas</h3>
@@ -507,14 +602,14 @@ export default function App() {
 
             return (
               <div key={element.id} style={{ position: 'absolute', left: element.x, top: element.y, zIndex: isSelected ? 1000 : index }}>
-                {(element.type === 'rectangle' || element.type === 'circle') && (
+                {(element.type === 'rectangle' || element.type === 'circle' || element.type === 'container') && (
                   <div
                     style={{ ...elementStyle, position: 'relative', left: 0, top: 0, backgroundColor: element.backgroundColor }}
                     onMouseDown={(e) => handleMouseDownOnElement(e, element.id)}
                   ></div>
                 )}
 
-                {element.type === 'text' && (
+                {(element.type === 'text' || element.type === 'button' || element.type === 'icon') && (
                   <div
                     style={{
                       ...elementStyle,
@@ -528,10 +623,45 @@ export default function App() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       padding: `${element.padding}px`,
+                      transition: 'background-color 0.2s',
+                    }}
+                    onMouseDown={(e) => handleMouseDownOnElement(e, element.id)}
+                    onMouseEnter={(e) => {
+                      if (element.type === 'button') {
+                        e.currentTarget.style.backgroundColor = element.hoverBackgroundColor;
+                        e.currentTarget.style.color = element.hoverColor;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (element.type === 'button') {
+                        e.currentTarget.style.backgroundColor = element.backgroundColor;
+                        e.currentTarget.style.color = element.color;
+                      }
+                    }}
+                  >
+                    {element.content}
+                  </div>
+                )}
+
+                {element.type === 'image' && (
+                  <div
+                    style={{
+                      ...elementStyle,
+                      position: 'relative',
+                      left: 0,
+                      top: 0,
+                      backgroundColor: element.backgroundColor,
+                      backgroundImage: `url(${element.src})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#999',
                     }}
                     onMouseDown={(e) => handleMouseDownOnElement(e, element.id)}
                   >
-                    {element.content}
+                    {!element.src && 'Image Placeholder'}
                   </div>
                 )}
 
@@ -566,17 +696,25 @@ export default function App() {
 
               <div style={styles.propertySection}>
                 <h3 style={styles.sectionTitle}>Style</h3>
-                {(selectedElement.type === 'rectangle' || selectedElement.type === 'circle') && (
+                {(selectedElement.type === 'rectangle' || selectedElement.type === 'circle' || selectedElement.type === 'button') && (
                   <PropertyInput label="BG Color" type="color" value={selectedElement.backgroundColor} onChange={e => updateSelectedElement('backgroundColor', e.target.value)} />
                 )}
-                {selectedElement.type === 'text' && (
+                {selectedElement.type === 'text' || selectedElement.type === 'button' ? (
                   <>
-                    <PropertyInput label="BG Color" type="color" value={selectedElement.backgroundColor} onChange={e => updateSelectedElement('backgroundColor', e.target.value)} />
                     <PropertyInput label="Content" type="text" value={selectedElement.content} onChange={e => updateSelectedElement('content', e.target.value)} />
                     <PropertyInput label="Font Size" value={selectedElement.fontSize} onChange={e => updateSelectedElement('fontSize', e.target.value)} />
                     <PropertyInput label="Color" type="color" value={selectedElement.color} onChange={e => updateSelectedElement('color', e.target.value)} />
                     <PropertyInput label="Padding" value={selectedElement.padding} onChange={e => updateSelectedElement('padding', e.target.value)} />
                   </>
+                ) : null}
+                {selectedElement.type === 'button' && (
+                  <>
+                    <PropertyInput label="Hover BG" type="color" value={selectedElement.hoverBackgroundColor} onChange={e => updateSelectedElement('hoverBackgroundColor', e.target.value)} />
+                    <PropertyInput label="Hover Txt" type="color" value={selectedElement.hoverColor} onChange={e => updateSelectedElement('hoverColor', e.target.value)} />
+                  </>
+                )}
+                {selectedElement.type === 'image' && (
+                  <PropertyInput label="Image URL" type="text" value={selectedElement.src} onChange={e => updateSelectedElement('src', e.target.value)} />
                 )}
                 {selectedElement.type !== 'circle' && (
                   <PropertyInput label="Border R." value={selectedElement.borderRadius} onChange={e => updateSelectedElement('borderRadius', e.target.value)} />
